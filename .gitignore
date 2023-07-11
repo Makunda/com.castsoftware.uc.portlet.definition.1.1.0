@@ -1,0 +1,6 @@
+Screenshots/
+test/
+
+# Ignore the python cache files
+*.pyc
+

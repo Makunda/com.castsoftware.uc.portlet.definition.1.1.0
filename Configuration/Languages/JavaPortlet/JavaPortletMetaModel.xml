@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<metaModel file_level="client" file_no="123456">
+
+    <!-- Java portlets Files extensions -->
+	<category name="JavaPortlet" rid="2123100">
+		<description>Java portlets</description>
+		<attribute name="extensions" stringValue="*.xml;*.XML;*.Xml"/>
+		<inheritedCategory name="UniversalLanguage"/>
+		<inheritedCategory name="CsvLanguage"/>
+	</category>
+
+    <!-- Java portlet Project -->
+    <!-- GrepTag:APM_SalesService_categories -->
+	<category name="Java Portlet Module" rid="2123101">
+		<description>Java portlets</description>
+		<inheritedCategory name="APM Client Modules"/>
+	</category>
+
+    <category name="APM Java Portlet Artifacts" rid="2123102">
+		<description>Java Portlet Artifacts</description>
+		<inheritedCategory name="APM Client Language Artifacts"/>
+
+	</category>
+
+	<type name="JavaPortlet_SUBSET" rid="2123103">
+		<description>Java Portlet Subset</description>
+		<inheritedCategory name="PROJECT_SUBSET"/>
+		<inheritedCategory name="JavaPortlet"/>
+		<inheritedCategory name="Java Portlet Module"/>
+	</type>
+
+    <!-- POM Enlighten group -->
+	<type name="EnlightenJavaPortlet" rid="2123104">
+		<description>Java Portlets</description>
+		<tree parent="EnlightenUniversalObjects" category="EnlightenTree"/>
+	</type>
+
+	<!-- POM Project -->
+	<type name="JavaPortletCASTProject" rid="2123105">
+		<description>Java Portlet Project</description>
+		<inheritedCategory name="UAProject"/>
+		<inheritedCategory name="JavaPortlet"/>
+        <inheritedCategory name="Java Portlet Module"/>
+	</type>
+
+    <!-- Metamodel's objects definitions: this section may be changed to add/update/delete objects -->
+
+    <type name="JSR168Portlet" rid="2123111">
+        <description>JSR-168 Portlet</description>
+        <inheritedCategory name="UAObject" />
+ 		<inheritedCategory name="METRICABLE" />
+        <attribute name="AUTO_FOLDER_THRESHOLD" intValue="1"/>
+
+		<inheritedCategory name="PortletProperties"/>
+
+        <tree parent="sourceFile" category="amtParentship"/>
+        <tree parent="EnlightenJavaPortlet" category="EnlightenTree"/>
+    </type>
+
+    <type name="JSR286Portlet" rid="2123112">
+        <description>JSR-286 Portlet</description>
+        <inheritedCategory name="UAObject" />
+ 		<inheritedCategory name="METRICABLE" />
+        <attribute name="AUTO_FOLDER_THRESHOLD" intValue="1"/>
+
+		<inheritedCategory name="PortletProperties"/>
+
+        <tree parent="sourceFile" category="amtParentship"/>
+        <tree parent="EnlightenJavaPortlet" category="EnlightenTree"/>
+    </type>
+
+
+	<category name="PortletProperties" rid="2123115">
+
+        <description>Java Portlet properties</description>
+
+		<property name="display_name" type="string" rid="2123116">
+            <description>Display Name</description>
+            <attribute name="INF_TYPE" intValue="2123117"/>
+            <attribute name="INF_SUB_TYPE" intValue="0"/>
+            <attribute name="ACCESS_APPVIEW" intValue="1"/>
+            <attribute name="ACCESS_CVS" intValue="1"/>
+            <attribute name="ACCESS_HTML" intValue="1"/>
+		</property>
+
+		<property name="portlet_name" type="string" rid="2123118">
+            <description>Portlet Name</description>
+            <attribute name="INF_TYPE" intValue="2123119"/>
+            <attribute name="INF_SUB_TYPE" intValue="0"/>
+            <attribute name="ACCESS_APPVIEW" intValue="1"/>
+            <attribute name="ACCESS_CVS" intValue="1"/>
+            <attribute name="ACCESS_HTML" intValue="1"/>
+		</property>
+
+		<property name="portlet_title" type="string" rid="2123120">
+            <description>Portlet Title</description>
+            <attribute name="INF_TYPE" intValue="2123121"/>
+            <attribute name="INF_SUB_TYPE" intValue="0"/>
+            <attribute name="ACCESS_APPVIEW" intValue="1"/>
+            <attribute name="ACCESS_CVS" intValue="1"/>
+            <attribute name="ACCESS_HTML" intValue="1"/>
+		</property>
+
+		<property name="portlet_keywords" type="string" rid="2123122">
+            <description>Portlet KeyWords</description>
+            <attribute name="INF_TYPE" intValue="2123123"/>
+            <attribute name="INF_SUB_TYPE" intValue="0"/>
+            <attribute name="ACCESS_APPVIEW" intValue="1"/>
+            <attribute name="ACCESS_CVS" intValue="1"/>
+            <attribute name="ACCESS_HTML" intValue="1"/>
+		</property>
+
+	</category>
+ 
+</metaModel>

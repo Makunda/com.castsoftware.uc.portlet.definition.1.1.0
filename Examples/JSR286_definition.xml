@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<portlet-app xmlns="http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd
+                                 http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd"
+             version="2.0">
+
+    <portlet>
+        <portlet-name>MyPortlet</portlet-name>
+        <display-name>My Portlet</display-name>
+        <portlet-class>com.adp.workflow.portlet.WorkflowFacesPortlet</portlet-class>
+        <portlet-class>com.example.MyPortlet</portlet-class>
+        <init-param>
+            <name>view-template</name>
+            <value>/ProxyUsers/view.jsp</value>
+        </init-param>
+        <init-param>
+            <name>com.ibm.faces.portlet.page.view</name>
+            <value>/WEB-INF/proxy/ProxyUser.jsp</value>
+        </init-param>
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>view</portlet-mode>
+            <portlet-mode>help</portlet-mode>
+        </supports>
+        <ressource-bundle>com.example.MyPortlet</ressource-bundle>
+        <portlet-info>
+            <title>My Portlet Title</title>
+            <short-title>My Portlet</short-title>
+            <keywords>portlet, example</keywords>
+        </portlet-info>
+    </portlet>
+
+</portlet-app>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE portlet-app-def PUBLIC "-//IBM//DTD Portlet Application 1.1//EN"
+"portlet_1.1.dtd">
+<portlet-app-def>
+    <portlet-app uid="DCE:d798f9c6c:1" major-version="2" minor-version="1">
+         <portlet-app-name>HelloWorld application</portlet-app-name>
+             <portlet id="HWPortlet_1" href="WEB-INF/web.xml#Servlet_1"
+            major-version="3" minor-version="2">
+             <portlet-name>HelloWorld portlet</portlet-name>
+             <cache>
+                <expires>30</expires>
+                <shared>yes</shared>
+             </cache>
+             <allows>
+             <maximized/>
+             <minimized/>
+             </allows>
+             <supports>
+                 <markup name="html">
+                    <view output="fragment"/>
+                    <configure/>
+                     <edit/>
+                    <help output="document"/>
+                 </markup>
+                 <markup name="wml">
+                 <view/>
+                 </markup>
+             </supports>
+         </portlet>
+     </portlet-app>
+
+     <concrete-portlet-app uid="DCE:d798f9c6c:1.1">
+         <portlet-app-name>HelloWorld application</portlet-app-name>
+         <context-param>68 IBM WebSphere Portal Toolkit V5
+            <param-name>context_param1</param-name>
+            <param-value>A context parameter</param-value>
+         </context-param>
+         <concrete-portlet href="#HWPortlet_1">
+         <portlet-name>HelloWorld portlet</portlet-name>
+         <default-locale>en</default-locale>
+         <language locale="en">
+             <title>HelloWorld</title>
+             <title-short>Hello</title-short>
+             <description>A simple hello world portlet.</description>
+             <keywords>Hello World simple</keywords>
+         </language>
+         <language locale="it">
+             <title>ciao mondo</title>
+             <title-short>ciao</title-short>
+         <description>Un portlet semplice del mondo di ciao.
+         </description>
+         <keywords>Ciao mondo semplice.</keywords>
+         </language>
+         <language locale="es">
+            <title>hola mundo</title>
+         </language>
+             <config-param>
+                <param-name>config_param1</param-name>
+                <param-value>A configuration parameter</param-value>
+             </config-param>
+         </concrete-portlet>
+     </concrete-portlet-app>
+</portlet-app-def>
