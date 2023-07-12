@@ -1,4 +1,4 @@
-from cast.application import Bookmark
+from cast.analysers import Bookmark
 
 
 class BaseBookmark:

@@ -3,16 +3,15 @@ Created on 6/27/2023
 
 @author: Hugo JOBY - HJO
 '''
-
-from cast.application import ApplicationLevelExtension, create_link, CustomObject
+import cast
+from cast.application import ApplicationLevelExtension, create_link
+from cast.application import CustomObject # @UnresolvedImport
 
 import definitions
 from portlet.objects.file_finder import FileFinder
 from portlet.objects.object_finder import ObjectFinder
 from portlet.serialization.portlet_materializer import PortletMaterializer
 from portlet.sys_logging.system_logger import SystemLogger
-from portlet.persistence.portlet_persistence import PortPersistence
-from portlet.type.base_portlet import BasePortlet
 
 
 class LinkObject:
@@ -38,12 +37,27 @@ class ApplicationExtension(ApplicationLevelExtension):
         self.jspPgs = {}
 
         self.linkObjects = []
+        self.portlet_type = ["JSR286Portlet", "JSR168Portlet"]
 
         # Other and utils
         self.logger = SystemLogger(__name__)
 
     def start_application(self, application):
         self.logger.info("===============  Portlet Definition Analyzer : Beginning of Execution ===============")
+
+    def find_portlet(self, application, full_name: str):
+        """"
+        Load the code of the Java elements that could potentially be called
+        :param application: The application to load the Java elements from
+        :param full_name: The fullname of the portlet
+        """
+        object_types = ObjectFinder(application).find_objects_by_types(self.portlet_type)
+
+        for target in object_types:
+            if target.get_fullname() == full_name:
+                return target
+
+        return None
 
     def load_java_classes_and_interfaces(self, application, target_type: [str]):
         """"
@@ -72,15 +86,11 @@ class ApplicationExtension(ApplicationLevelExtension):
             # sys_logging.info(" - %s [%s]" % (target_name, target_type))
             self.jspPgs[target_fullname] = target
 
-    def get_intermediate_file(self) -> str:
+    def get_intermediate_file_content(self) -> str:
         """
         Deserialize the intermediate file containing the portlets and return the list of portlets
         :return: The list of portlets
         """
-        portlets = []
-        success = 0
-        failure = 0
-
         self.logger.info(
             "[PORTLET DESERIALIZATION] Starting the deserialization of the file at '%s'." % definitions.INTERMEDIATE_FILE)
         with self.get_intermediate_file(definitions.INTERMEDIATE_FILE) as f:
@@ -89,7 +99,6 @@ class ApplicationExtension(ApplicationLevelExtension):
             # If the file is empty, return an empty list and log it
             if f is None:
                 self.logger.info("[PORTLET DESERIALIZATION] File is empty.")
-                return portlets
 
             # Read the file entirely
             content = ""
@@ -122,7 +131,6 @@ class ApplicationExtension(ApplicationLevelExtension):
         self.logger.info("=============== Portlet Definition Analyzer : End Application Create Objects ===============")
         self.load_data(application)
 
-        file_finder = FileFinder(application)
         portlet_materializer = PortletMaterializer(application)
 
         # Find the parent file of the portlet
@@ -133,7 +141,7 @@ class ApplicationExtension(ApplicationLevelExtension):
                 break
 
         # Deserialize the list of portlet
-        file_content = self.get_intermediate_file()
+        file_content = self.get_intermediate_file_content()
         portlets = portlet_materializer.deserialize(file_content)
 
         success = 0
@@ -141,27 +149,32 @@ class ApplicationExtension(ApplicationLevelExtension):
 
         # Create the list of links
         self.logger.info("[PORTLET CREATION] Starting the portlet creation phase.")
-        for (portlet, custom_obj) in portlets:
+        for portlet in portlets:
             try:
+                # Find portlet object with the same full name
+                portlet_obj = self.find_portlet(application, portlet.get_full_name())
+                if portlet_obj is None:
+                    self.logger.error("Could not find portlet object with full name [%s]." % portlet.get_full_name())
+                    continue
 
                 # Link the portlet to the Java elements
                 for class_element in portlet.get_portlet_class_list():
                     if class_element in self.jvCls.keys():
-                        self.linkObjects.append(LinkObject('callLink', custom_obj, self.jvCls[class_element]))
+                        self.linkObjects.append(LinkObject('callLink', portlet_obj, self.jvCls[class_element]))
                     else:
-                        self.logger.info("Could not find and link class [%s]" % class_element)
+                        self.logger.info("Could not find and link class [%s]." % class_element)
 
                 # Link the portlet to the JSP elements
                 for jsp_element in portlet.get_view_template_list():
                     if jsp_element in self.jspPgs.keys():
-                        self.linkObjects.append(LinkObject('callLink', custom_obj, self.jspPgs[jsp_element]))
+                        self.linkObjects.append(LinkObject('callLink', portlet_obj, self.jspPgs[jsp_element]))
                     else:
-                        self.logger.info("Could not find and link JSP element [%s]" % jsp_element)
+                        self.logger.info("Could not find and link JSP element [%s]." % jsp_element)
 
                 # Link the portlet to the JSP elements
                 for resource in portlet.get_resource_bundles():
                     if resource in self.jvCls.keys():
-                        self.linkObjects.append(LinkObject('callLink', custom_obj, self.jvCls[resource]))
+                        self.linkObjects.append(LinkObject('callLink', portlet_obj, self.jvCls[resource]))
                     else:
                         self.logger.info("Could not find and link class [%s]" % resource)
 
@@ -192,8 +205,8 @@ class ApplicationExtension(ApplicationLevelExtension):
                 self.nbNewLinks += 1
                 success_link += 1
             except Exception as e:
-                self.logger.error('Could not create link between %s and %s' % (
-                    linkObject.callerObject.get_name(), linkObject.calledObject.get_name()), e)
+                self.logger.error('Could not create link between [%s] and [%s].' % (
+                    linkObject.callerObject, linkObject.calledObject), e)
                 failure_link += 1
 
             # Every 5 links, log the amount of links successfully created and get the ratio of links successfully created

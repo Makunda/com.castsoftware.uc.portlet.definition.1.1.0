@@ -5,14 +5,13 @@ Created on 6/27/2023
 """
 import cast_upgrade_1_6_16 # @UnusedImport
 import cast.analysers.ua
-from cast.analysers import log
+from cast.analysers import log, CustomObject
 
 from definitions import INTERMEDIATE_FILE
 
 
 from portlet.sys_logging.system_logger import SystemLogger
 from portlet.strategies.portlet_stategy import PortletStrategy
-from portlet.type.base_portlet import BasePortlet
 
 
 class PortletAnalysisLevel(cast.analysers.ua.Extension):
@@ -33,6 +32,17 @@ class PortletAnalysisLevel(cast.analysers.ua.Extension):
         # Open the file
         self.intermediateFile = self.get_intermediate_file(INTERMEDIATE_FILE)
         self.logger.debug("The shared results will be stored in: " + str(INTERMEDIATE_FILE))
+
+        try:
+            options = cast.analysers.get_ua_options()               #@UndefinedVariable dynamically added
+            if not 'JavaPortlet' in options:
+                # SQLScript language not selected : inactive
+                self.active = False
+            else:
+                # options :
+                self.extensions = options['JavaPortlet'].extensions
+        except:
+            pass
 
     def end_analysis(self):
         self.logger.info('Number of portlet objects created : ' + str(self.NbCreatedPortlet))
@@ -57,7 +67,7 @@ class PortletAnalysisLevel(cast.analysers.ua.Extension):
 
             # Log the file processing
             log.info("[Java Portlets] Parsing file %s..." % filepath)
-            self.logger.info("Now Processing XML file: " + str(filepath))
+            self.logger.debug("Now Processing XML file: " + str(filepath))
 
             # Ignore the file if the
             if not filepath.endswith('.xml'):
@@ -69,9 +79,6 @@ class PortletAnalysisLevel(cast.analysers.ua.Extension):
 
             # If the file is
             if filepath.endswith('.xml'):
-
-                # Log the file processing
-                self.logger.info("Valid XML file identified. Now processing.")
 
                 # Process the file
                 created_portlets = PortletStrategy.deserialize_portlet(filepath)
@@ -88,10 +95,38 @@ class PortletAnalysisLevel(cast.analysers.ua.Extension):
                 # Use the intermediate file to store the portlet definition and the java class called
                 for portlet in created_portlets:
                     # Attach the parent file to the portlet
-                    portlet.set_cast_parent(file)
+                    portlet.set_parent(file)
 
                     self.append_portlet_definition(portlet)
                     self.logger.debug("Portlet definition saved to intermediate file" + str(portlet.get_name()))
+
+                    # Persist the portlet
+                    # Create the portlet
+                    portlet_obj = CustomObject()
+                    portlet_obj.set_name(portlet.get_name())
+                    portlet_obj.set_fullname(portlet.get_full_name())
+                    portlet_obj.set_type(portlet.get_portlet_type().value)
+                    portlet_obj.set_guid(portlet.get_guid())
+
+                    portlet_obj.set_parent(portlet.get_parent())
+                    portlet_obj.save()
+
+                    try:
+                        # Set the bookmark for the parent file
+                        base_bookmark = portlet.get_base_bookmark()
+
+                        # Set the bookmark if applicable
+                        if base_bookmark is not None:
+                            bookmark = base_bookmark.to_bookmark(portlet.get_parent())
+                            portlet_obj.save_position(bookmark)
+
+                    except Exception as e:
+                        self.logger.error("Error while setting the parent for %s: %s" % (portlet.get_name(), e))
+
+                    # Iterate over the list of properties and save them
+                    for prop in portlet.get_properties():
+                        portlet_obj.save_property(prop.get_name(), prop.get_value())
+
 
         except Exception as e:
             self.logger.error("Error while processing file: " + str(file.get_path()) + " Error: " + str(e))

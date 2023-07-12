@@ -12,19 +12,19 @@ class SystemLogger(object):
         self.origin = origin
 
     def info(self, message):
-        msg = "[" + self.name + "][INFO] : " + message
+        msg = "[" + str(self.name) + "][INFO] : " + message
 
         log.info(msg)  # Log a message with a #Info# prefix for the analyzer
         logging.info(msg)
 
     def warning(self, message):
-        msg = "[" + self.name + "][WARNING] : " + message
+        msg = "[" + str(self.name) + "][WARNING] : " + message
         log.warning(msg)  # Log a warning message with a #Warning# prefix
         logging.warning(msg)
 
     def error(self, message, exception=None):
         # Log a warning message with a #Error# prefix
-        msg = "[" + self.name + "][ERROR] : " + message
+        msg = "[" + str(self.name) + "][ERROR] : " + message
         if exception:
             msg += " : Exception:  " + str(exception)
 
@@ -32,11 +32,11 @@ class SystemLogger(object):
         logging.error(msg)
 
     def critical(self, message):
-        msg = "[" + self.name + "][CRITICAL] : " + message
+        msg = "[" +str(self.name) + "][CRITICAL] : " + message
         log.warning(msg)
         logging.critical(msg)
 
     def debug(self, message):
-        msg = "[" + self.name + "][DEBUG] " + message
+        msg = "[" + str(self.name) + "][DEBUG] " + message
         log.debug(msg)
         logging.debug(msg)

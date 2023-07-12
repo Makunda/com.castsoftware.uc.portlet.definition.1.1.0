@@ -1,9 +1,11 @@
+import cast
 from cast.analysers import CustomObject
 
 from portlet.enumerations.portlet_enum import PortletType
 from portlet.sys_logging.system_logger import SystemLogger
 from portlet.type.base_bookmark import BaseBookmark
 from portlet.type.base_portlet import BasePortlet
+from portlet.utils.dict_utils import DictUtils
 from portlet.utils.json.json_utils import JsonUtils
 from portlet.utils.xml_portlet_util import XMLPortletUtils
 
@@ -56,6 +58,12 @@ class JSR286Portlet(BasePortlet):
     def get_supported_portlet_modes(self):
         return self.supported_portlet_modes
 
+    def get_full_name(self):
+        """
+        Get the full name of the portlet
+        """
+        return "%s/%s" % (self.get_file_path(), self.get_name())
+
     def get_description_info(self):
         """
         Concatenate the description info from the portlet classes
@@ -84,9 +92,6 @@ class JSR286Portlet(BasePortlet):
             "keywords": self.keywords
         }
 
-    def get_description_info(self):
-        pass
-
     @staticmethod
     def deserialize(json_string) -> 'JSR286Portlet':
         """
@@ -96,17 +101,17 @@ class JSR286Portlet(BasePortlet):
         """
         data = JsonUtils.loads(json_string)
 
-        portlet = JSR286Portlet(file_path=data["file_path"],
-                                portlet_name=data["portlet_name"],
-                                portlet_classes=data["portlet_classes"],
-                                view_templates=data["view_templates"],
-                                resource_bundles=data["resource_bundles"],
-                                display_name=data["display_name"],
-                                supported_mime_types=data["supported_mime_types"],
-                                supported_portlet_modes=data["supported_portlet_modes"],
-                                title=data["title"],
-                                short_title=data["short_title"],
-                                keywords=data["keywords"])
+        portlet = JSR286Portlet(file_path=DictUtils.get_value(data, "file_path", ""),
+                                portlet_name=DictUtils.get_value(data, "portlet_name", ""),
+                                portlet_classes=DictUtils.get_value(data, "portlet_classes", []),
+                                view_templates=DictUtils.get_value(data, "view_templates", []),
+                                resource_bundles=DictUtils.get_value(data, "resource_bundles", []),
+                                display_name=DictUtils.get_value(data, "display_name", ""),
+                                supported_mime_types=DictUtils.get_value(data, "supported_mime_types", []),
+                                supported_portlet_modes=DictUtils.get_value(data, "supported_portlet_modes", []),
+                                title=DictUtils.get_value(data, "title", ""),
+                                short_title=DictUtils.get_value(data, "short_title", ""),
+                                keywords=DictUtils.get_value(data, "keywords", []))
 
         # if the portlet has a bookmark, add it to the dict
         if "bookmark" in data:
@@ -121,34 +126,43 @@ class JSR286Portlet(BasePortlet):
         :param portlet: Portlet to persist
         :return: None
         """
+        # Assert that the parent is not None
+        assert parent_file is not None
+
         # Properties
         full_name = "%s/%s" % (self.get_file_path(), self.get_name())
 
         # Create the object for the portlet
-        portlet_obj = CustomObject()
+        # jobObject = cast.analysers.CustomObject()
+        #                                     jobObject.set_name(jobName)
+        #                                     jobObject.set_fullname("%s/%s" % (filepath, jobName))
+        #                                     jobObject.set_type('ZEKEJob')
+        #                                     jobObject.set_parent(file)
+        #                                     jobObject.save()
+        portlet_obj = cast.analysers.CustomObject()
         portlet_obj.set_name(self.get_name())
         portlet_obj.set_fullname(full_name)
         portlet_obj.set_type(self.get_portlet_type_val())
         portlet_obj.set_guid("%s FileObject_GUID %s" % (self.get_file_path(), portlet_obj.fullname))
 
+        portlet_obj.set_parent(parent_file)
+        # Save the object
+        portlet_obj.save()
+
+        # LOG OBJECT SAVED
+        LOGGER.info("Portlet object saved: %s" % str(portlet_obj))
+
         try:
-            # Set the parent file
-            if parent_file is not None:
-                portlet_obj.set_parent(parent_file)
+            # Set the bookmark for the parent file
+            base_bookmark = self.get_base_bookmark()
 
-                # Set the bookmark for the parent file
-                base_bookmark = self.get_base_bookmark()
-
-                # Set the bookmark if applicable
-                if base_bookmark is not None:
-                    bookmark = base_bookmark.to_bookmark(parent_file)
-                    portlet_obj.save_position(bookmark)
+            # Set the bookmark if applicable
+            if base_bookmark is not None:
+                bookmark = base_bookmark.to_bookmark(parent_file)
+                portlet_obj.save_position(bookmark)
 
         except Exception as e:
             LOGGER.error("Error while setting the parent for %s: %s" % (full_name, e))
-
-        # Save the object
-        portlet_obj.save()
 
         # Persist the portlet properties
         try:

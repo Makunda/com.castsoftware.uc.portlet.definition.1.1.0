@@ -19,7 +19,7 @@ class PortletMaterializer:
 
         self._file_finder = FileFinder(application)
 
-    def deserialize(self, file_content: str) -> [(BasePortlet, CustomObject)]:
+    def deserialize(self, file_content: str) -> [BasePortlet]:
         """
         Deserialize the file content and materialize the portlets in the application
         """
@@ -29,17 +29,20 @@ class PortletMaterializer:
         for line in file_content.splitlines():
             base_portlets.append((BasePortlet.deserialize(line), line))
 
+        # Log the amount of portlets to materialize
+        self._logger.info("Materializing [%s] portlets." % len(base_portlets))
+
         success, errors = 0, 0
-        custom_objects = []
+        portlets = []
         # Based on the type, persist the portlet in the application
         for (base_portlet, content) in base_portlets:
             try:
                 if base_portlet.get_portlet_type() == PortletType.JSR168:
-                    custom_objects.append((base_portlet, self.materialize_jsr_168(content)))
+                    portlets.append(self.materialize_jsr_168(content))
                 elif base_portlet.get_portlet_type() == PortletType.JSR286:
-                    custom_objects.append((base_portlet, self.materialize_jsr_286(content)))
+                    portlets.append(self.materialize_jsr_286(content))
                 elif base_portlet.get_portlet_type() == PortletType.JSR286:
-                    custom_objects.append((base_portlet, self.materialize_ibm(content)))
+                    portlets.append(self.materialize_ibm(content))
                 else:
                     self._logger.error("Could not materialize portlet with type [%s]" % base_portlet.type)
 
@@ -53,34 +56,42 @@ class PortletMaterializer:
         self._logger.info("Successfully materialized [%s] portlets. Failed operations [%s]." % (success, errors))
 
         # Return the list of custom objects
-        return custom_objects
+        return portlets
 
-    def materialize_jsr_168(self, content: str) -> CustomObject:
+    def materialize_jsr_168(self, content: str) -> JSR168Portlet:
         """
         Materialize a JSR 168 portlet in the application
         :param content: The content of the portlet
         """
+        # Log the deserialize operation
+        self._logger.info("Deserializing JSR-168 portlet.")
+
         jsr_168_portlet = JSR168Portlet.deserialize(content)
 
         # Find parent file
         parent_file = self._file_finder.find_file_by_path(jsr_168_portlet.get_file_path())
+        jsr_168_portlet.set_parent(parent_file)
 
         # Persist the portlet in the application
-        return jsr_168_portlet.persist_portlet(parent_file)
+        return jsr_168_portlet
 
-    def materialize_jsr_286(self, content: str):
+    def materialize_jsr_286(self, content: str) -> JSR286Portlet:
         """
         Materialize a JSR 286 portlet in the application
         :param application: The application to materialize the portlet in
         :param content: The content of the portlet
         """
+        # Log the deserialize operation
+        self._logger.info("Deserializing JSR-286 portlet.")
+
         jsr_286_portlet = JSR286Portlet.deserialize(content)
 
         # Find parent file
         parent_file = self._file_finder.find_file_by_path(jsr_286_portlet.get_file_path())
+        jsr_286_portlet.set_parent(parent_file)
 
         # Persist the portlet in the application
-        return jsr_286_portlet.persist_portlet(parent_file)
+        return jsr_286_portlet
 
     def materialize_ibm(self, content: str):
         """

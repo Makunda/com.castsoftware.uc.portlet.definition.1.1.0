@@ -52,6 +52,7 @@
         <attribute name="AUTO_FOLDER_THRESHOLD" intValue="1"/>
 
 		<inheritedCategory name="PortletProperties"/>
+        <inheritedCategory name="JavaPortlet"/>
 
         <tree parent="sourceFile" category="amtParentship"/>
         <tree parent="EnlightenJavaPortlet" category="EnlightenTree"/>
@@ -64,6 +65,7 @@
         <attribute name="AUTO_FOLDER_THRESHOLD" intValue="1"/>
 
 		<inheritedCategory name="PortletProperties"/>
+        <inheritedCategory name="JavaPortlet"/>
 
         <tree parent="sourceFile" category="amtParentship"/>
         <tree parent="EnlightenJavaPortlet" category="EnlightenTree"/>
@@ -104,6 +106,15 @@
 		<property name="portlet_keywords" type="string" rid="2123122">
             <description>Portlet KeyWords</description>
             <attribute name="INF_TYPE" intValue="2123123"/>
+            <attribute name="INF_SUB_TYPE" intValue="0"/>
+            <attribute name="ACCESS_APPVIEW" intValue="1"/>
+            <attribute name="ACCESS_CVS" intValue="1"/>
+            <attribute name="ACCESS_HTML" intValue="1"/>
+		</property>
+
+        <property name="description" type="string" rid="2123124">
+            <description>Portlet Description</description>
+            <attribute name="INF_TYPE" intValue="2123125"/>
             <attribute name="INF_SUB_TYPE" intValue="0"/>
             <attribute name="ACCESS_APPVIEW" intValue="1"/>
             <attribute name="ACCESS_CVS" intValue="1"/>

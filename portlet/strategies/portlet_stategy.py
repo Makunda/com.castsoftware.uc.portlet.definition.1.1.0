@@ -32,8 +32,6 @@ class PortletStrategy:
         # Determine the type of the portlet if it exists in the file
         portlet_type = PortletDeterminator.determine_portlet_type(xml_content)
 
-        portletLogger.debug("Found portlet type: " + str(portlet_type))
-
         # Parse the portlet based on the type on log it
         if portlet_type == PortletType.JSR286:
             portletLogger.info("A JSR 286 portlet has been detected. Parsing file: " + str(file_path) + ".")
@@ -45,5 +43,5 @@ class PortletStrategy:
         elif portlet_type == PortletType.GENERIC:
             portletLogger.warning("An other portlet has been detected. This type of portlet is not supported yet. File: " + str(file_path))
         else:
-            portletLogger.error("Could not determine the type of portlet in " + str(file_path) + ". Nothing has been parsed.")
+            portletLogger.debug("Could not determine the type of portlet in " + str(file_path) + ". Nothing has been parsed.")
             return []

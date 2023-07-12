@@ -1,5 +1,8 @@
 import json
 
+from cast.application import File
+
+from portlet.data.PropertyItem import PropertyItem
 from portlet.enumerations.portlet_enum import PortletType
 from portlet.type.base_bookmark import BaseBookmark
 
@@ -36,8 +39,14 @@ class BasePortlet:
         self.portlet_type = portlet_type
 
         # Parent Object
-        self.cast_parent = None
+        self.parent = None
         self.bookmark = None
+
+    def get_guid(self):
+        """
+        Get the guid of the portlet
+        """
+        return "%s FileObject_GUID %s" % (self.get_file_path(), self.get_full_name())
 
     def get_portlet_type(self):
         return self.portlet_type
@@ -69,8 +78,17 @@ class BasePortlet:
     def get_base_bookmark(self) -> BaseBookmark or None:
         return self.bookmark
 
-    def set_cast_parent(self, parent):
-        self.cast_parent = parent
+    def set_parent(self, parent):
+        self.parent = parent
+
+    def get_parent(self) -> File:
+        return self.parent
+
+    def get_full_name(self):
+        """
+        Get the full name of the portlet
+        """
+        return "%s/%s" % (self.get_file_path(), self.get_name())
 
     def set_bookmark(self, bookmark: BaseBookmark):
         """
@@ -78,6 +96,15 @@ class BasePortlet:
         :param bookmark: Bookmark object
         """
         self.bookmark = bookmark
+
+    def get_properties(self):
+        """
+        Get the properties for the portlet
+        :return: Dict of properties
+        """
+        return [
+            PropertyItem("PortletProperties.description", self.get_description_info()),
+        ]
 
     def serialize(self):
         """
@@ -129,3 +156,9 @@ class BasePortlet:
             portlet.set_bookmark(BaseBookmark.deserialize(data["bookmark"]))
 
         return portlet
+
+    def persist_portlet(self):
+        """
+        Persist the portlet to the database
+        """
+        pass

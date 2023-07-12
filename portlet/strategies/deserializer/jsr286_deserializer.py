@@ -4,6 +4,7 @@ from portlet.strategies.deserializer.abstract_portlet_deserializer import Abstra
 from portlet.type.base_bookmark import BaseBookmark
 from portlet.type.base_portlet import BasePortlet
 from portlet.type.jsr286_portlet import JSR286Portlet
+from portlet.utils.regex.re_utils import ReUtils
 from portlet.utils.xml.nsxml import NsXml
 
 
@@ -22,6 +23,10 @@ class JSR286Deserializer(AbstractPortletDeserializer):
         """
 
         self._logger.debug("Parsing portlet " + str(file_path) + " as a JSR286 portlet.")
+
+        # Get file content
+        with open(file_path, "r") as file:
+            file_content = file.read()
 
         # Use the xml deserialization
         root = NsXml.parse_file(file_path)
@@ -44,12 +49,14 @@ class JSR286Deserializer(AbstractPortletDeserializer):
 
         self._logger.info("Found " + str(len(portlet_elements)) + " portlets in file " + str(file_path) + ".")
 
+        it = 0
         # Get all the portlets elements in the file
         for portlet_elements in root.findall(".//portlet"):
 
+            it += 1
+
             # Get the start and end line numbers
-            start_line = portlet_elements.sourceline
-            end_line = start_line + len(portlet_elements.attrib) + 1
+            start_line, end_line = ReUtils.find_tag_position(file_content, "portlet", it)
 
             try:
                 # Parse the portlet and save it to the database

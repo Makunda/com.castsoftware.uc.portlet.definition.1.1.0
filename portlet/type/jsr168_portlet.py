@@ -1,5 +1,7 @@
+import cast
 from cast.analysers import CustomObject
 
+from portlet.data.PropertyItem import PropertyItem
 from portlet.enumerations.portlet_enum import PortletType
 from portlet.sys_logging.system_logger import SystemLogger
 from portlet.type.base_bookmark import BaseBookmark
@@ -8,6 +10,7 @@ from portlet.utils.json.json_utils import JsonUtils
 from portlet.utils.xml_portlet_util import XMLPortletUtils
 
 LOGGER = SystemLogger("JSR168Portlet Global Logger")
+
 
 class JSR168Portlet(BasePortlet):
     """
@@ -41,6 +44,14 @@ class JSR168Portlet(BasePortlet):
         self.short_title = short_title
         self.keywords = keywords
 
+        self.parent = None
+
+    def set_parent(self, parent):
+        """
+        Set the parent of the portlet
+        """
+        self.parent = parent
+
     def get_dict(self):
         return {
             "file_path": self.file_path,
@@ -62,8 +73,10 @@ class JSR168Portlet(BasePortlet):
         Concatenate the description info from the portlet classes
         """
         description_info = "" + \
-                           "<p><b>Supported Mimes Types:</b>{mimes}</p>\n".format(mimes=self.get_supported_mime_types()) +\
-                           "<p><b>Portlet Modes:</b> {portlet_modes}</p>".format(portlet_modes=self.get_supported_portlet_modes()) + \
+                           "<p><b>Supported Mimes Types:</b>{mimes}</p>\n".format(
+                               mimes=self.get_supported_mime_types()) + \
+                           "<p><b>Portlet Modes:</b> {portlet_modes}</p>".format(
+                               portlet_modes=self.get_supported_portlet_modes()) + \
                            "<p><b>Keywords:</b> {keywords}</p>".format(keywords=self.get_keywords())
         return description_info
 
@@ -112,53 +125,17 @@ class JSR168Portlet(BasePortlet):
         # return the portlet object
         return portlet
 
-    def persist_portlet(self, parent_file=None):
+    def get_properties(self) -> [PropertyItem]:
         """
-        Persist the portlet to the database
-        :param parent_file:
-        :param portlet: Portlet to persist
-        :return: None
+        Get the properties for the portlet
+        :return: Dict of properties
         """
-        # Properties
-        full_name = "%s/%s" % (self.get_file_path(), self.get_name())
-
-        # Create the object for the portlet
-        portlet_obj = CustomObject()
-        portlet_obj.set_name(self.get_name())
-        portlet_obj.set_fullname(full_name)
-        portlet_obj.set_type(self.get_portlet_type_val())
-        portlet_obj.set_guid("%s FileObject_GUID %s" % (self.get_file_path(), portlet_obj.fullname))
-
-        try:
-            # Set the parent file
-            if parent_file is not None:
-                portlet_obj.set_parent(parent_file)
-
-                # Set the bookmark for the parent file
-                base_bookmark = self.get_base_bookmark()
-
-                # Set the bookmark if applicable
-                if base_bookmark is not None:
-                    bookmark = base_bookmark.to_bookmark(parent_file)
-                    portlet_obj.save_position(bookmark)
-
-        except Exception as e:
-            LOGGER.error("Error while setting the parent for %s: %s" % (full_name, e))
-
-        # Save the object
-        portlet_obj.save()
-
-        # Persist the portlet properties
-        try:
-            portlet_obj.save_property("PortletProperties.display_name", self.get_display_name())
-            portlet_obj.save_property("PortletProperties.title", self.get_title())
-            portlet_obj.save_property("PortletProperties.short_title", self.get_short_title())
-            portlet_obj.save_property("PortletProperties.description", self.get_description_info())
-            portlet_obj.save_property("PortletProperties.keywords", self.get_keywords())
-        except Exception as e:
-            LOGGER.error("Error while saving the portlet properties for %s: %s" % (full_name, e))
-
-        return portlet_obj
+        return [
+            PropertyItem("PortletProperties.title", self.get_title()),
+            PropertyItem("PortletProperties.short_title", self.get_short_title()),
+            PropertyItem("PortletProperties.description", self.get_description_info()),
+            PropertyItem("PortletProperties.keywords", self.get_keywords()),
+        ]
 
     @staticmethod
     def parse_portlet_definition(file_path: str, portlet_element):
